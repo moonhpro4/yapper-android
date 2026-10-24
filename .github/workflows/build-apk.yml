@@ -30,9 +30,12 @@ jobs:
           path: Yapper.apk
 
   ios:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode project
@@ -91,15 +94,34 @@ jobs:
       - name: Build DMGs
         working-directory: desktop
         shell: bash
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: |
-          set -o pipefail
           npm install 2>&1 | tail -5
-          npx electron-builder --mac --publish never 2>&1 | tee build.log
+          sudo mdutil -a -i off || true
+          if npx electron-builder --mac dmg --arm64 --x64 --publish never 2>&1 | tee build.log \
+             && ls dist/Yapper-macOS-arm64.dmg dist/Yapper-macOS-x64.dmg; then
+            echo "electron-builder DMGs OK"
+          else
+            echo "::warning::electron-builder DMG step failed, building DMGs with hdiutil instead"
+            for d in $(hdiutil info | grep -o '/dev/disk[0-9]*' | sort -u); do hdiutil detach -force "$d" || true; done
+            rm -rf dist
+            npx electron-builder --mac dir --arm64 --x64 --publish never 2>&1 | tee build2.log
+            for pair in "arm64:dist/mac-arm64" "x64:dist/mac"; do
+              arch="${pair%%:*}"; dir="${pair##*:}"
+              rm -rf stage && mkdir stage
+              cp -R "$dir/Yapper.app" stage/
+              ln -s /Applications stage/Applications
+              hdiutil create -volname "Install Yapper" -srcfolder stage -ov -format UDZO "dist/Yapper-macOS-$arch.dmg"
+            done
+            ls -la dist
+          fi
       - name: Show macOS errors
         if: failure()
         working-directory: desktop
         shell: bash
         run: |
+          cat build.log build2.log 2>/dev/null | grep -iE "error|failed|cannot|not found|⨯" | head -15 | while IFS= read -r l; do echo "::error::${l:0:600}"; done
           grep -iE "error|failed|cannot|not found|⨯" build.log | head -15 | while IFS= read -r l; do echo "::error::${l:0:600}"; done
           tail -15 build.log | while IFS= read -r l; do echo "::warning::${l:0:600}"; done
       - uses: actions/upload-artifact@v4
