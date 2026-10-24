@@ -1,6 +1,7 @@
 ; Custom pages / actions for the Yapper Windows installer (electron-builder NSIS include)
 
 !ifndef BUILD_UNINSTALLER
+  !include MUI2.nsh
   !include nsDialogs.nsh
   !include LogicLib.nsh
 
