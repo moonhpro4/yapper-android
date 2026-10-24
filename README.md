@@ -6,26 +6,45 @@
 
 **Yapper is an open source, free-to-use Discord alternative.**
 
-This repository is the **Android port** of Yapper for mobile. It opens Yapper full screen, like a native app.
+This repository contains the native app ports of Yapper for **Android, iOS, macOS and Windows**. Each one opens Yapper full screen, like a native app.
 
 🌐 Website: https://www.yapper.website/
 
-## Download
+## Download (v1.0.0)
 
-Grab the latest APK from the [Releases page](../../releases/latest) (`Yapper.apk`), open it on your Android device and install it. You may need to allow installs from unknown sources.
+Everything is on the [v1.0.0 release page](../../releases/tag/v1.0.0).
 
-Every push to `main` is built automatically by GitHub Actions. You can also download the APK from the **Actions** tab (artifact `Yapper-apk`).
+| Platform | File | How to install |
+| --- | --- | --- |
+| Android | `Yapper.apk` | Open it and allow installs from unknown sources. |
+| iOS / iPadOS | `Yapper-iOS.ipa` | Unsigned build. Sideload with [AltStore](https://altstore.io) or [Sideloadly](https://sideloadly.io). |
+| macOS (Apple Silicon) | `Yapper-macOS-arm64.dmg` | Open the DMG and drag Yapper into Applications. |
+| macOS (Intel) | `Yapper-macOS-x64.dmg` | Same as above. |
+| Windows | `Yapper-Setup.exe` | Run the installer wizard. |
+
+### First launch warnings
+
+The builds are not code-signed.
+
+- **Windows:** if SmartScreen appears, click *More info* then *Run anyway*.
+- **macOS:** if macOS says the app can't be opened, right-click Yapper in Applications and choose *Open*, or run `xattr -cr /Applications/Yapper.app` in Terminal.
+
+## Project layout
+
+| Folder | What it is |
+| --- | --- |
+| `app/` | Android app (Java, WebView) |
+| `ios/` | iOS app (Swift, WKWebView), project generated with XcodeGen |
+| `desktop/` | Windows and macOS app (Electron) with installer wizard / DMG |
 
 ## Build it yourself
 
-Requirements: JDK 17, Android SDK, Gradle 8.7+.
+- **Android:** `gradle assembleRelease` (JDK 17, Android SDK).
+- **iOS:** `cd ios && xcodegen generate`, then open `Yapper.xcodeproj` in Xcode.
+- **Windows / macOS:** `cd desktop && npm install && npx electron-builder --win` (or `--mac`).
 
-```bash
-gradle assembleRelease
-```
-
-The APK will be at `app/build/outputs/apk/release/app-release.apk`.
+Every push to `main` is built by GitHub Actions and published to the v1.0.0 release.
 
 ## Contributing
 
-Yapper is open source — issues and pull requests are welcome.
+Yapper is open source. Issues and pull requests are welcome.

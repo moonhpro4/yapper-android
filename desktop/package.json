@@ -1,0 +1,62 @@
+{
+  "name": "yapper",
+  "version": "1.0.0",
+  "description": "Yapper - open source, free-to-use Discord alternative",
+  "author": "Yapper",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "website.yapper.desktop",
+    "productName": "Yapper",
+    "copyright": "Yapper",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "package.json", "build/icon.png"],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "icon": "build/icon-mac.png",
+      "identity": null,
+      "target": [{ "target": "dmg", "arch": ["arm64", "x64"] }],
+      "artifactName": "Yapper-macOS-${arch}.dmg",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Yapper needs the camera for video calls.",
+        "NSMicrophoneUsageDescription": "Yapper needs the microphone for voice and video calls."
+      }
+    },
+    "dmg": {
+      "title": "Install Yapper",
+      "icon": "build/icon-mac.png",
+      "background": "build/background.png",
+      "window": { "width": 540, "height": 380 },
+      "iconSize": 96,
+      "contents": [
+        { "x": 140, "y": 190, "type": "file" },
+        { "x": 400, "y": 190, "type": "link", "path": "/Applications" }
+      ]
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Yapper",
+      "runAfterFinish": true,
+      "artifactName": "Yapper-Setup.exe"
+    }
+  }
+}

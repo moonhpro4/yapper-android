@@ -1,0 +1,47 @@
+name: Yapper
+options:
+  bundleIdPrefix: website.yapper
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  Yapper:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+      - Assets.xcassets
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Yapper
+        CFBundleName: Yapper
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: LaunchBlack
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: true
+        UIRequiresFullScreen: true
+        UIUserInterfaceStyle: Dark
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSCameraUsageDescription: Yapper needs the camera for video calls and sharing photos.
+        NSMicrophoneUsageDescription: Yapper needs the microphone for voice and video calls.
+        NSPhotoLibraryUsageDescription: Yapper needs photo access so you can share images.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: website.yapper.app
+        PRODUCT_NAME: Yapper
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
