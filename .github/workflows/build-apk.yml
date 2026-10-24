@@ -40,10 +40,19 @@ jobs:
         run: xcodegen generate
       - name: Build (unsigned)
         working-directory: ios
+        shell: bash
         run: |
+          set -o pipefail
           xcodebuild -project Yapper.xcodeproj -scheme Yapper -configuration Release \
             -sdk iphoneos -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build 2>&1 | tee build.log
+      - name: Show iOS errors
+        if: failure()
+        working-directory: ios
+        shell: bash
+        run: |
+          grep -E "error:|\*\* BUILD FAILED|Unable|cannot|No such" build.log | head -15 | while IFS= read -r l; do echo "::error::${l:0:600}"; done
+          tail -15 build.log | while IFS= read -r l; do echo "::warning::${l:0:600}"; done
       - name: Package IPA
         working-directory: ios
         run: |
@@ -81,9 +90,18 @@ jobs:
           node-version: '20'
       - name: Build DMGs
         working-directory: desktop
+        shell: bash
         run: |
-          npm install
-          npx electron-builder --mac --publish never
+          set -o pipefail
+          npm install 2>&1 | tail -5
+          npx electron-builder --mac --publish never 2>&1 | tee build.log
+      - name: Show macOS errors
+        if: failure()
+        working-directory: desktop
+        shell: bash
+        run: |
+          grep -iE "error|failed|cannot|not found|⨯" build.log | head -15 | while IFS= read -r l; do echo "::error::${l:0:600}"; done
+          tail -15 build.log | while IFS= read -r l; do echo "::warning::${l:0:600}"; done
       - uses: actions/upload-artifact@v4
         with:
           name: macos
