@@ -76,9 +76,18 @@ jobs:
           node-version: '20'
       - name: Build installer
         working-directory: desktop
+        shell: bash
         run: |
-          npm install
-          npx electron-builder --win --publish never
+          set -o pipefail
+          npm install 2>&1 | tail -3
+          npx electron-builder --win --publish never 2>&1 | tee build.log
+      - name: Show Windows errors
+        if: failure()
+        working-directory: desktop
+        shell: bash
+        run: |
+          grep -iE "error|warning|failed|not found|⨯" build.log | head -20 | while IFS= read -r l; do echo "::error::${l:0:600}"; done
+          tail -15 build.log | while IFS= read -r l; do echo "::warning::${l:0:600}"; done
       - uses: actions/upload-artifact@v4
         with:
           name: windows

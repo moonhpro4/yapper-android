@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, shell, session, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 const HOME_URL = 'https://www.yapper.website/';
 const HOST = 'yapper.website';
@@ -59,7 +60,18 @@ async function checkForUpdate() {
   } catch (e) { /* offline or endpoint unreachable: try again later */ }
 }
 
+// Preferences written by the Windows installer wizard (%APPDATA%\\Yapper\\settings.json).
+function readSettings() {
+  try {
+    const f = path.join(app.getPath('appData'), 'Yapper', 'settings.json');
+    return JSON.parse(fs.readFileSync(f, 'utf8'));
+  } catch (e) {
+    return {};
+  }
+}
+
 function startUpdateChecks() {
+  if (readSettings().checkUpdates === false) return; // turned off in the installer
   checkForUpdate();
   updateTimer = setInterval(checkForUpdate, 60000);
 }

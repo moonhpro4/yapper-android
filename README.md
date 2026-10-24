@@ -22,6 +22,10 @@ Everything is on the [v1.0.0 release page](../../releases/tag/v1.0.0).
 | macOS (Intel) | `Yapper-macOS-x64.dmg` | Same as above. |
 | Windows | `Yapper-Setup.exe` | Run the installer wizard. |
 
+### Windows installer options
+
+The installer wizard has an options page with two optional checkboxes: **Open Yapper when Windows starts** and **Check for updates automatically**. Both are on by default and can be switched off. Run the installer again to change them.
+
 ### First launch warnings
 
 The builds are not code-signed.
