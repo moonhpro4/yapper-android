@@ -99,22 +99,37 @@ jobs:
         run: |
           npm install 2>&1 | tail -5
           sudo mdutil -a -i off || true
-          if npx electron-builder --mac dmg --arm64 --x64 --publish never 2>&1 | tee build.log \
-             && ls dist/Yapper-macOS-arm64.dmg dist/Yapper-macOS-x64.dmg; then
+          detach_all() {
+            for d in $(hdiutil info | grep -o '/dev/disk[0-9]*' | sort -u); do hdiutil detach -force "$d" >/dev/null 2>&1 || true; done
+          }
+          ok=0
+          for attempt in 1 2 3; do
+            echo "== electron-builder DMG attempt $attempt"
+            detach_all; rm -rf dist
+            if npx electron-builder --mac dmg --arm64 --x64 --publish never > build.log 2>&1 \
+               && [ -f dist/Yapper-macOS-arm64.dmg ] && [ -f dist/Yapper-macOS-x64.dmg ]; then
+              ok=1; break
+            fi
+            tail -3 build.log
+          done
+          if [ "$ok" = "1" ]; then
             echo "electron-builder DMGs OK"
           else
-            echo "::warning::electron-builder DMG step failed, building DMGs with hdiutil instead"
-            for d in $(hdiutil info | grep -o '/dev/disk[0-9]*' | sort -u); do hdiutil detach -force "$d" || true; done
-            rm -rf dist
-            npx electron-builder --mac dir --arm64 --x64 --publish never 2>&1 | tee build2.log
-            for pair in "arm64:dist/mac-arm64" "x64:dist/mac"; do
-              arch="${pair%%:*}"; dir="${pair##*:}"
+            echo "::warning::electron-builder DMG failed 3 times, building DMGs with hdiutil instead"
+            detach_all; rm -rf dist
+            npx electron-builder --mac dir --arm64 --x64 --publish never > build2.log 2>&1 || { tail -20 build2.log; exit 1; }
+            find dist -maxdepth 2 -name 'Yapper.app' > apps.txt
+            cat apps.txt
+            while read -r app; do
+              case "$app" in *arm64*) arch=arm64;; *) arch=x64;; esac
+              echo "== packaging $arch from $app"
               rm -rf stage && mkdir stage
-              cp -R "$dir/Yapper.app" stage/
+              cp -R "$app" stage/
               ln -s /Applications stage/Applications
-              hdiutil create -volname "Install Yapper" -srcfolder stage -ov -format UDZO "dist/Yapper-macOS-$arch.dmg"
-            done
+              hdiutil create -volname "Install Yapper $arch" -srcfolder stage -ov -fs HFS+ -format UDZO "dist/Yapper-macOS-$arch.dmg" || { echo "::error::hdiutil create failed for $arch"; exit 1; }
+            done < apps.txt
             ls -la dist
+            [ -f dist/Yapper-macOS-arm64.dmg ] && [ -f dist/Yapper-macOS-x64.dmg ] || { echo "::error::fallback did not produce both DMGs"; exit 1; }
           fi
       - name: Show macOS errors
         if: failure()
